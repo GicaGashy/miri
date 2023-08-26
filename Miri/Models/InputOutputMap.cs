@@ -11,9 +11,15 @@ namespace Miri.Models
         public string ImportFolder { get; set; }
         public string ExportFolder { get; set; }
         public Dictionary<string, string> CodeMaps { get; set; }
+        public ExceptionRules ExceptionRules { get; set; }
 
         public InputOutputMap() { 
             CodeMaps = new Dictionary<string, string>();
         }
     }
+    public class ExceptionRules
+    {
+        public string ZRule1 { get; set; }
+    }
+
 }

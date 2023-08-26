@@ -1,5 +1,5 @@
 {
-  "ImportFolder": "C:\\Users\\gencg\\OneDrive\\Desktop\\pergencin",
+  "ImportFolder": "C:\\Users\\gencg\\OneDrive\\Desktop\\_tested",
   "ExportFolder": "C:\\Users\\gencg\\OneDrive\\Desktop\\xxxed",
   "CodeMaps": {
     "G0": "XG0",
@@ -7,6 +7,6 @@
     "G2": "XA2P G=2"
   },
   "ExceptionRules": {
-    "Z_RULE_1": "OVERRIDE" // CALCULATE, OVERRIDE, IGNORE
+    "ZRule1": "CALCULATE" // CALCULATE, OVERRIDE, IGNORE
   }
 }

@@ -9,7 +9,10 @@ namespace Miri.Logic
 {
     public class Core
     {
-        private Prep prep;
+        public Prep prep;
+        public int TotalFiles { get; set; }
+        public int CurrentFile { get; set; } = 0;
+
         public Core()
         {
             Run();
@@ -27,6 +30,7 @@ namespace Miri.Logic
                 if (Path.GetExtension(file).Equals(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     filePaths.Add(file);
+                    Console.WriteLine(file);
                 }
             }
 
@@ -43,9 +47,27 @@ namespace Miri.Logic
             prep = new Prep();
 
             List<string> filePaths = ExtractPaths(prep.IoMap.ImportFolder, ".xxl");
+            Task.Delay(1000).Wait();
+            
+            if(filePaths.Count == 0)
+            {
+                Console.WriteLine("No files found!");
+                return;
+            }
+
+            TotalFiles = filePaths.Count;
+            Console.WriteLine("Total files found: {0}", TotalFiles);
+
             foreach (string filePath in filePaths)
             {
-                new Conversion(filePath, prep);
+                try
+                {
+                    new Conversion(filePath, prep);
+                    Console.WriteLine("File {0} of {1} processed!", ++CurrentFile, TotalFiles);
+                } catch(Exception ex)
+                {
+                    Console.WriteLine($"An error occurred: {ex.Message}");
+                }
             }
         }
 

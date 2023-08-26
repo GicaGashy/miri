@@ -14,6 +14,7 @@ namespace Miri.Contstants
             public const string C_PATTERN   = @"C\s*=\s*(\d+)";
             public const string T_PATTERN   = @"T=\d+";
             public const string XDZ_PATTERN = @"X=DZ\/[\d.]+";
+            public const string Z_PATTERN = @"Z=-\d+\.\d+\+\d+\.\d+"; // complex: @"Z=(-|\+)?\d+\.\d+(-|\+)\d+\.\d+";
         }
     }
 }

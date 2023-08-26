@@ -49,7 +49,7 @@ namespace Miri.Logic
             }
         }
 
-        public string ProcessLine(string inputLine)
+        private string ProcessLine(string inputLine)
         {
 
             if (FirstLine)
@@ -59,7 +59,15 @@ namespace Miri.Logic
 
                 if (dzMatch.Success)
                 {
-                    DzValue = decimal.Parse(dzMatch.Groups[0].Value.Split('=')[1]);
+                    try
+                    {
+                        DzValue = decimal.Parse(dzMatch.Groups[0].Value.Split('=')[1]);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"An error occurred at dzMatch conversion part: {ex.Message}");
+                    }
+
                 }
 
                 this.FirstLine = false;
@@ -70,7 +78,13 @@ namespace Miri.Logic
             // this is for all lines
             foreach(KeyValuePair<string, string> kvp in Prep.IoMap.CodeMaps)
             {
-                inputLine = inputLine.Replace(kvp.Key, kvp.Value);
+                try
+                {
+                    inputLine = inputLine.Replace(kvp.Key, kvp.Value);
+                }
+                catch (Exception ex) { 
+                    Console.WriteLine($"An error occurred at KV Part (dynamic rules): {ex.Message}"); 
+                }
             }
 
             Match cMatch = Regex.Match(inputLine, StringConstants.RegexPatterns.C_PATTERN);
@@ -93,20 +107,71 @@ namespace Miri.Logic
             Match xdzMatch = Regex.Match(inputLine, StringConstants.RegexPatterns.XDZ_PATTERN);
             if(xdzMatch.Success)
             {
-                string xdz = xdzMatch.Groups[0].Value;
-                string zdzSplitted = xdz.Split('/')[1];
-                int parsetInt = Int32.Parse(zdzSplitted);
+                try
+                {
 
-                int calculatedDzValue = (int) DzValue / parsetInt;
+                    string xdz = xdzMatch.Groups[0].Value;
+                    string zdzSplitted = xdz.Split('/')[1];
+                    int parsetInt = Int32.Parse(zdzSplitted);
 
-                inputLine = inputLine.Replace(xdz, "X=" + calculatedDzValue.ToString());
-                //inputLine = inputLine.Replace(tmp, tmp.Replace("DZ", DzValue.ToString()));
+                    int calculatedDzValue = (int) DzValue / parsetInt;
+
+                    inputLine = inputLine.Replace(xdz, "X=" + calculatedDzValue.ToString());
+                } catch (Exception e)
+                {
+                    Console.WriteLine($"An error occurred at xdzMatch conversion part: {e.Message}");
+                }
             }
 
+            // The z pattern catch: Z=-2.00+20.00
+            Match zMatch = Regex.Match(inputLine, StringConstants.RegexPatterns.Z_PATTERN);
+            if (zMatch.Success)
+            {
+                try
+                {
+                    string z = zMatch.Groups[0].Value;
+                    inputLine = inputLine.Replace(z, zCatchLogic(z));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"An error occurred at zMatch conversion part: {e.Message}");
+                }
+            }
 
             string outputLine = inputLine;
 
             return outputLine;
+        }
+
+        private string zCatchLogic(string input)
+        {
+            string rule = Prep.IoMap.ExceptionRules.ZRule1;
+
+            // Z=-2.00+20.00
+            if (rule == "OVERRIDE")
+            {
+                string tmp = input.Split('+')[1]; // 20.00
+                return "Z=" + tmp;
+            }
+
+            if(rule == "CALCULATE")
+            {
+                // Z=-2.00+20.00
+                string[] splitted= input.Split('=');
+
+                string numberPart = splitted[1]; // -2.00+20.00
+                string firstPart = numberPart.Split('+')[0]; // -2.00
+                string secondPart = numberPart.Split('+')[1]; // 20.00
+
+                decimal firstPartDecimal = decimal.Parse(firstPart);
+                decimal secondPartDecimal = decimal.Parse(secondPart);
+
+                decimal result = firstPartDecimal + secondPartDecimal;
+
+                return "Z=" + result.ToString();
+            }
+
+            return input;
         }
     }
 }

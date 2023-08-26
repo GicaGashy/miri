@@ -19,7 +19,20 @@ namespace Miri.Logic
 
         private void OpenIOMaps()
         {
-            using (StreamReader r = new StreamReader("C:\\Users\\gencg\\OneDrive\\Desktop\\Projects\\albed\\Miri\\Miri\\IOMaps.json"))
+            try
+            {
+                StreamReader r = new StreamReader("IOMaps.json");
+                string json = r.ReadToEnd();
+                IoMap = JsonConvert.DeserializeObject<InputOutputMap>(json);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+            }
+
+            using (StreamReader r = new StreamReader("IOMaps.json"))
             {
                 string json = r.ReadToEnd();
                 IoMap = JsonConvert.DeserializeObject<InputOutputMap>(json);
