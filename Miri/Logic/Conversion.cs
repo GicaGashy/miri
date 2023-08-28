@@ -110,13 +110,15 @@ namespace Miri.Logic
                 try
                 {
 
-                    string xdz = xdzMatch.Groups[0].Value;
-                    string zdzSplitted = xdz.Split('/')[1];
-                    int parsetInt = Int32.Parse(zdzSplitted);
+                    string xdz = xdzMatch.Groups[0].Value; // "Y=DZ/2"
+                    
+                    string zdsSplittedVariablePart = xdz.Split('=')[0]; // "Y"
+                    string xdzSplittedValuePart = xdz.Split('/')[1]; // "2"
+                    int parsetInt = Int32.Parse(xdzSplittedValuePart);
 
                     int calculatedDzValue = (int) DzValue / parsetInt;
 
-                    inputLine = inputLine.Replace(xdz, "X=" + calculatedDzValue.ToString());
+                    inputLine = inputLine.Replace(xdz, $"{zdsSplittedVariablePart}={calculatedDzValue}");
                 } catch (Exception e)
                 {
                     Console.WriteLine($"An error occurred at xdzMatch conversion part: {e.Message}");
