@@ -12,17 +12,16 @@ namespace Miri.Logic
 {
     public class Conversion
     {
-        public Prep Prep;
-        public decimal DzValue { get; set; } = 0.0m;
-        public string LatestCValue { get; set; }
-        public bool FirstLine { get; set; } = true;
-        public Conversion(string filePath, Prep prep)
+        private readonly Prep Prep;
+        private decimal DzValue { get; set; } = 0.0m;
+        private string LatestCValue { get; set; }
+        private bool FirstLine { get; set; } = true;
+        public Conversion(Prep prep)
         {
             this.Prep = prep;
-            Run(filePath);
         }
 
-        public void Run(string filePath)
+        public bool Run(string filePath)
         {
             try
             {
@@ -46,7 +45,47 @@ namespace Miri.Logic
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.Message}");
+                throw ex;
             }
+
+            return true;
+        }
+
+        public bool CopyPng(string filePath)
+        {
+            try
+            {
+                string outputFileName = Path.GetFileNameWithoutExtension(filePath); // Get the file name without extension
+                string directoryPath = Path.GetDirectoryName(filePath); // Get the directory path
+                string pngFileName = $"{outputFileName}.png"; // Construct the .png file name
+
+                // Check if a .png file with the same name exists in the same directory
+                string[] pngFiles = Directory.GetFiles(directoryPath, pngFileName);
+
+                if (pngFiles.Length > 0)
+                {
+                    // Get the first matching .png file
+                    string pngFilePath = pngFiles[0];
+
+                    // Construct the destination path in the export folder
+                    string relativePath = UtilMethods.StringMethods.GetRelativePath(pngFilePath, Prep.IoMap.ImportFolder);
+                    string destinationPath = Path.Combine(Prep.IoMap.ExportFolder, relativePath);
+
+                    // Ensure the destination directory exists
+                    string destinationDirectory = Path.GetDirectoryName(destinationPath);
+                    Directory.CreateDirectory(destinationDirectory);
+
+                    // Copy the .png file to the destination path
+                    File.Copy(pngFilePath, destinationPath, true); // The 'true' flag allows overwriting if the file already exists
+                }
+
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw ex;
+            }
+
+            return true;
         }
 
         private string ProcessLine(string inputLine)
@@ -61,11 +100,14 @@ namespace Miri.Logic
                 {
                     try
                     {
-                        DzValue = decimal.Parse(dzMatch.Groups[0].Value.Split('=')[1]);
+                        var convertedDecimal = UtilMethods.Conversions.StringToDecimal(dzMatch.Groups[1].Value);
+                        
+                        DzValue = convertedDecimal;
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"An error occurred at dzMatch conversion part: {ex.Message}");
+                        throw ex;
                     }
 
                 }
@@ -114,7 +156,7 @@ namespace Miri.Logic
                     
                     string zdsSplittedVariablePart = xdz.Split('=')[0]; // "Y"
                     string xdzSplittedValuePart = xdz.Split('/')[1]; // "2"
-                    int parsetInt = Int32.Parse(xdzSplittedValuePart);
+                    int parsetInt = UtilMethods.Conversions.StringToInt(xdzSplittedValuePart);
 
                     int calculatedDzValue = (int) DzValue / parsetInt;
 
@@ -132,7 +174,7 @@ namespace Miri.Logic
                 try
                 {
                     string z = zMatch.Groups[0].Value;
-                    inputLine = inputLine.Replace(z, zCatchLogic(z));
+                    inputLine = inputLine.Replace(z, ZCatchLogic(z));
                 }
                 catch (Exception e)
                 {
@@ -145,7 +187,7 @@ namespace Miri.Logic
             return outputLine;
         }
 
-        private string zCatchLogic(string input)
+        private string ZCatchLogic(string input)
         {
             string rule = Prep.IoMap.ExceptionRules.ZRule1;
 
@@ -165,8 +207,8 @@ namespace Miri.Logic
                 string firstPart = numberPart.Split('+')[0]; // -2.00
                 string secondPart = numberPart.Split('+')[1]; // 20.00
 
-                decimal firstPartDecimal = decimal.Parse(firstPart);
-                decimal secondPartDecimal = decimal.Parse(secondPart);
+                decimal firstPartDecimal =  UtilMethods.Conversions.StringToDecimal(firstPart);
+                decimal secondPartDecimal = UtilMethods.Conversions.StringToDecimal(secondPart);
 
                 decimal result = firstPartDecimal + secondPartDecimal;
 
@@ -175,5 +217,6 @@ namespace Miri.Logic
 
             return input;
         }
+
     }
 }

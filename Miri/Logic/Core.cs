@@ -62,8 +62,22 @@ namespace Miri.Logic
             {
                 try
                 {
-                    new Conversion(filePath, prep);
-                    Console.WriteLine("File {0} of {1} processed!", ++CurrentFile, TotalFiles);
+                    var conversion = new Conversion(prep);
+                    
+                    var conversionResult = conversion.Run(filePath);
+
+                    if (conversionResult)
+                    {
+                        Console.WriteLine("File {0} of {1} processed!", ++CurrentFile, TotalFiles);
+                    
+                        var copyPngResult = conversion.CopyPng(filePath);
+                        
+                        if (copyPngResult)
+                        {
+                            Console.WriteLine("PNG Copied!");
+                        }
+                    }
+
                 } catch(Exception ex)
                 {
                     Console.WriteLine($"An error occurred: {ex.Message}");

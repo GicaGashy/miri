@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,35 @@ namespace Miri.Common
 
                 Uri relativeUri = basePathUri.MakeRelativeUri(fullPathUri);
                 return Uri.UnescapeDataString(relativeUri.ToString());
+            }
+        }
+
+        public static class Conversions
+        {
+            public static decimal StringToDecimal(string str, string cultureInfoCode = "en-US")
+            {
+                try
+                {
+                    var cultureInfo = new CultureInfo(cultureInfoCode);
+                    return Convert.ToDecimal(str, cultureInfo);
+
+                } catch(Exception ex) {
+                    Console.WriteLine(ex.Message);
+                    throw ex;
+                }
+            }
+
+            public static int StringToInt(string str, string cultureInfoCode = "en-US")
+            {
+                try
+                {
+                    var cultureInfo = new CultureInfo(cultureInfoCode);
+                    return Convert.ToInt32(str, cultureInfo);
+                } catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    throw ex;
+                }
             }
         }
     }
